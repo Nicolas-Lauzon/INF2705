@@ -33,12 +33,7 @@ public:
         // créer le bonhomme graphique
         initialiserGraphique();
 
-        // créer quelques autres formes
-        //cube = new FormeCube( 1.0, true );
-        //quad = new FormeQuad( 1.0, true );
-        //sphere = new FormeSphere( 1.0, 8, 8, true );
-        //cylindre = new FormeCylindre( 1.0, 1.0, 1.0, 16, 2, true );
-        //afficherCylindre();
+        
     }
     ~Bonhomme()
     {
@@ -78,8 +73,19 @@ public:
         // créer le VBO pour les sommets
         //...
 
+        glGenBuffers( 1, &vboTheiereSommets );
+        glBindBuffer( GL_ARRAY_BUFFER, vboTheiereSommets);
+        glBufferData( GL_ARRAY_BUFFER, sizeof(gTheiereSommets), gTheiereSommets, GL_STATIC_DRAW );
+        glVertexAttribPointer( locVertex, 3, GL_FLOAT, GL_FALSE, 0, 0 );
+        
+
         // créer le VBO la connectivité
         //...
+
+        glGenBuffers( 1, &vboTheiereConnec );
+        glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, vboTheiereConnec );
+        glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof(gTheiereConnec), gTheiereConnec,GL_STATIC_DRAW );
+        glEnableVertexAttribArray( locVertex );
 
         glBindVertexArray(0);
     }
@@ -98,12 +104,9 @@ public:
         // (partie 2) MODIFICATIONS ICI ...
         //...
 
-        // vous pouvez utiliser temporairement cette fonction pour la première partie du TP, mais vous ferez mieux dans la seconde partie du TP
-        glBegin( GL_TRIANGLES );
-        for ( unsigned int i = 0 ; i < sizeof(gTheiereConnec)/sizeof(GLuint) ; i++ )
-            glVertex3fv( &(gTheiereSommets[3*gTheiereConnec[i]] ) );
-        glEnd( );
+        glDrawElements(	GL_TRIANGLES,sizeof(gTheiereConnec)/sizeof(GLuint),GL_UNSIGNED_INT ,0);
 
+        
         glBindVertexArray(0);
     }
 
@@ -115,15 +118,16 @@ public:
         // donner la couleur de l'antenne
         glVertexAttrib3f( locColor, 0.5, 0.5, 1.0 ); // violet; équivalent au glColor() de OpenGL 2.x
 
-        // montrer le repère à la position courante
-        //afficherRepereCourant( );
+        
 
         // afficher la première partie de l'antenne
 
-        //gros cylindre
+        //gros cylindre pour l'antenne
         matrModel.PushMatrix(); {
 
-            matrModel.Translate(0.0, 0.0, taille*2); // bidon à modifier
+            matrModel.Translate(position[0], position[1], position[2]+taille*2); // bidon à modifier
+            matrModel.Rotate(angleCorps, 0.0 , 0.0 , 1.0 );
+            
             cylindre = new FormeCylindre( taille/3, taille/3, taille, 16, 1, true );
             
 
@@ -135,14 +139,14 @@ public:
 
         }matrModel.PopMatrix(); glUniformMatrix4fv( locmatrModel, 1, GL_FALSE, matrModel );
 
-        // afficher la seconde partie de l'antenne
-        // Procéder comme avec la première partie de l'antenne.
-        //...
+        
 
-        //petit cylindre
+        //petit cylindre pour l'antenne
         matrModel.PushMatrix(); {
 
-            matrModel.Translate(0.0, 0.0, 0.0 + taille*3); // bidon à modifier
+            matrModel.Translate(position[0], position[1], position[2] + taille*3); // bidon à modifier
+            matrModel.Rotate(angleCorps, 0.0 , 0.0 , 1.0 );
+            matrModel.Scale(0.33, 1, 1);
             cylindre = new FormeCylindre( taille, taille, taille/3, 16, 1, true );
             
 
@@ -161,11 +165,11 @@ public:
     // Les yeux sont à 60 degrés d'écart (30 degrés vers la gauche pour un oeil et 30 degrés vers la droite pour l'autre).
     void afficherTete()
     {
-        // montrer le repère à la position courante
-        //afficherRepereCourant();
+        
 
         // donner la couleur de la tête
         glVertexAttrib3f(locColor, 0.0, 1.0, 0.0); // vert; équivalent au glColor() de OpenGL 2.x
+        
         //Pour la tête
         matrModel.PushMatrix(); {
 
@@ -176,35 +180,40 @@ public:
                 {
                 default:
                 case 1: // une sphère
-                    matrModel.Translate(0.0, 0.0, taille); // (bidon) À MODIFIER
+                    matrModel.Translate(position[0], position[1], position[2]+taille); 
                     sphere = new FormeSphere( taille, 8, 8, true );
                     glUniformMatrix4fv(locmatrModel, 1, GL_FALSE, matrModel);
                     afficherSphere();
                     break;
 
                 case 2: // la théière
-                    matrModel.Scale(0.45, 0.45, 0.45);
+                    matrModel.Translate(position[0], position[1], position[2]);
+                    matrModel.Scale(0.45*taille, 0.45*taille, 0.45*taille);
+                    matrModel.Rotate(90, 1.0 , 0.0, 0.0);
                     glUniformMatrix4fv(locmatrModel, 1, GL_FALSE, matrModel);
                     afficherTheiere();
                     break;
                 }
+                
             }matrModel.PopMatrix(); glUniformMatrix4fv(locmatrModel, 1, GL_FALSE, matrModel);
 
             // donner la couleur des yeux
             glVertexAttrib3f(locColor, 1.0, 1.0, 0.0); // jaune; équivalent au glColor() de OpenGL 2.x
 
+
             // afficher les yeux
             //...
-
 
             //oeil droit
             matrModel.PushMatrix(); {
                 
                 
-                matrModel.Translate(0.0, 0.0, taille); // (bidon) À MODIFIER
+                matrModel.Translate(position[0], position[1], position[2]+taille); 
                 matrModel.Rotate(30, 0.0 , 0.0, 1.0);
                 matrModel.Translate(taille,0.0,0.0);
+                
                 sphere = new FormeSphere( 0.45*taille, 8, 8, true );
+                
                 glUniformMatrix4fv(locmatrModel, 1, GL_FALSE, matrModel);
                 afficherSphere();
                     
@@ -215,10 +224,11 @@ public:
             matrModel.PushMatrix(); {
                 
                 
-                matrModel.Translate(0.0, 0.0, taille); // (bidon) À MODIFIER
+                matrModel.Translate(position[0], position[1], position[2]+taille); 
                 matrModel.Rotate(-30, 0.0 , 0.0, 1.0);
                 matrModel.Translate(taille,0.0,0.0);
                 sphere = new FormeSphere( 0.45*taille, 8, 8, true );
+                matrModel.Rotate(angleCorps, 0.0 , 1.0, 0.0);
                 glUniformMatrix4fv(locmatrModel, 1, GL_FALSE, matrModel);
                 afficherSphere();
                     
@@ -237,13 +247,11 @@ public:
 
         //aile droite
         matrModel.PushMatrix();{
-            matrModel.Translate( 0.0, taille, taille ); // (bidon) À MODIFIER
+            
+            matrModel.Translate( position[0], position[1]+taille, position[2]+taille ); 
             matrModel.Rotate(angleAile , 1.0 , 0.0 ,0.0 );
             matrModel.Translate(0.0,taille,0.0);
-            
-            //afficherRepereCourant( ); // débogage
             quad = new FormeQuad( taille*2, true );
-            
             glUniformMatrix4fv( locmatrModel, 1, GL_FALSE, matrModel );
             afficherQuad();
         }matrModel.PopMatrix(); glUniformMatrix4fv( locmatrModel, 1, GL_FALSE, matrModel );
@@ -251,13 +259,10 @@ public:
 
         //aile gauche
         matrModel.PushMatrix();{
-            matrModel.Translate( 0.0, -taille, taille ); // (bidon) À MODIFIER
+            matrModel.Translate( position[0], position[1]-taille, position[2]+taille); 
             matrModel.Rotate(-angleAile , 1.0 , 0.0 ,0.0 );
             matrModel.Translate(0.0,-taille,0.0);
-            
-            //afficherRepereCourant( ); // débogage
             quad = new FormeQuad( taille*2, true );
-            
             glUniformMatrix4fv( locmatrModel, 1, GL_FALSE, matrModel );
             afficherQuad();
         }matrModel.PopMatrix(); glUniformMatrix4fv( locmatrModel, 1, GL_FALSE, matrModel );
@@ -277,21 +282,13 @@ public:
         // bras gauche
         matrModel.PushMatrix();{
 
-            matrModel.Translate( 0.0, 0.0, taille ); // (bidon) À MODIFIER
+            matrModel.Translate( position[0], position[1], position[2]+taille ); 
             matrModel.Rotate(angleBras, 0.0 , 0.0 , 1.0 );
-
             matrModel.Rotate(-10.0, 1.0 , 0.0 , 0.0 );
-
             matrModel.Translate( 0.0, taille, 0.0 );
             matrModel.Scale(largMembre,longMembre,largMembre);
-
             matrModel.Translate(0.0,longMembre*1.0/2,0.0);
-            
-
             cube = new FormeCube( 1.0, true );
-
-            //afficherRepereCourant( ); // débogage
-
             glUniformMatrix4fv( locmatrModel, 1, GL_FALSE, matrModel );
             afficherCube();
         }matrModel.PopMatrix(); glUniformMatrix4fv( locmatrModel, 1, GL_FALSE, matrModel );
@@ -299,21 +296,13 @@ public:
         //bras droit
         matrModel.PushMatrix();{
 
-            matrModel.Translate( 0.0, 0.0, taille ); // (bidon) À MODIFIER
+            matrModel.Translate( position[0], position[1], position[2]+taille ); 
             matrModel.Rotate(-angleBras, 0.0 , 0.0 , 1.0 );
-
             matrModel.Rotate(10.0, 1.0 , 0.0 , 0.0 );
-
             matrModel.Translate( 0.0, -taille, 0.0 );
             matrModel.Scale(largMembre,longMembre,largMembre);
-
             matrModel.Translate(0.0,-longMembre*1.0/2,0.0);
-            
-
             cube = new FormeCube( 1.0, true );
-
-            //afficherRepereCourant( ); // débogage
-
             glUniformMatrix4fv( locmatrModel, 1, GL_FALSE, matrModel );
             afficherCube();
         }matrModel.PopMatrix(); glUniformMatrix4fv( locmatrModel, 1, GL_FALSE, matrModel );
@@ -327,21 +316,12 @@ public:
         //jambe gauche
         matrModel.PushMatrix();{
 
-            matrModel.Translate( 0.0, 0.0, taille ); // (bidon) À MODIFIER
+            matrModel.Translate( position[0], position[1], position[2]+taille ); 
             matrModel.Rotate(-30, 1.0 , 0.0 , 0.0 );
-
-            //matrModel.Rotate(10.0, 1.0 , 0.0 , 0.0 );
-
             matrModel.Translate( 0.0,0.0, -taille );
             matrModel.Scale(largMembre,largMembre,longMembre);
-
             matrModel.Translate(0.0,0.0,-longMembre*1.0/2);
-            
-
             cube = new FormeCube( 1.0, true );
-
-            //afficherRepereCourant( ); // débogage
-
             glUniformMatrix4fv( locmatrModel, 1, GL_FALSE, matrModel );
             afficherCube();
         }matrModel.PopMatrix(); glUniformMatrix4fv( locmatrModel, 1, GL_FALSE, matrModel );
@@ -349,21 +329,12 @@ public:
 
         //jambe droite
         matrModel.PushMatrix();{
-matrModel.Translate( 0.0, 0.0, taille ); // (bidon) À MODIFIER
+            matrModel.Translate( position[0], position[1], position[2]+taille ); 
             matrModel.Rotate(30, 1.0 , 0.0 , 0.0 );
-
-            //matrModel.Rotate(10.0, 1.0 , 0.0 , 0.0 );
-
             matrModel.Translate( 0.0,0.0, -taille );
             matrModel.Scale(largMembre,largMembre,longMembre);
-
             matrModel.Translate(0.0,0.0,-longMembre*1.0/2);
-            
-
             cube = new FormeCube( 1.0, true );
-
-            //afficherRepereCourant( ); // débogage
-
             glUniformMatrix4fv( locmatrModel, 1, GL_FALSE, matrModel );
             afficherCube();
         }matrModel.PopMatrix(); glUniformMatrix4fv( locmatrModel, 1, GL_FALSE, matrModel );
@@ -371,12 +342,11 @@ matrModel.Translate( 0.0, 0.0, taille ); // (bidon) À MODIFIER
 
     void afficher()
     {
-        // afficherRepereCourant( ); // débogage
         matrModel.PushMatrix();{ // sauvegarder la tranformation courante
 
             // ajouter une ou des transformations afin de centrer le haut du corps à la position courante "position[]" et de tourner son corps de l'angle "angleCorps"
             //...
-
+            matrModel.Rotate(angleCorps, 0.0 , 0.0 , 1.0 );
             // afficher le corps
             afficherAntenne();
 

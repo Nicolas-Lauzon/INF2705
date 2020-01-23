@@ -1,35 +1,25 @@
-Q1: Supposons que les coordonnées du modèle soient exprimées dans un système
-    de coordonnées « main gauche » (au lieu du l'habituel « main droite »).
-    Comment devrait-on alors modifier la matrice 4x4 servant à la rotation
-    afin de préserver le même effet visuel d'une rotation positive ?  Quelle
-    serait la nouvelle matrice pour une rotation autour de l'axe des Z ?
-
-Si on inverse un des axes pour passer d'un repère main droite à un repère
-main gauche, on doit alors changer le signe '-' de place devant les sin()
-qui sont hors de la diagonale.
-Le +sin() devient -sin() et le -sin() devient +sin().
-
-La matrice de rotation autour de l'axe des Z deviendrait :
- cos sin 0 0
--sin cos 0 0
-   0   0 1 0
-   0   0 0 1
+Q1: Lorsque l'on construit notre robot dans la partie 1 du TP, on effectue plusieurs transformations OpenGL sur chaque partie du bonhomme.
+    Ici on voudrait déplacer un objet quelconque sur un point arbitraire, faire un changement d'échelle puis une rotation et un enfin
+    un dernier déplacement. Écrivez la série de commandes OpenGL pour arriver à ces résultats en affichant l'objet (pas besoin d'arguments dans les fonctions) et
+    surtout l'ordre des commandes que vous auriez donné dans le code pour arriver à ce résultat en justifiant pourquoi (vous pouvez détailler
+    le calcul mathématique matriciel pour vous aider à justifier).
 
 
-Q2: Dans ce TP, on peut déplacer le bonhomme avec les flèches du clavier ou
-    encore lancer un déplacement « automatique » avec la touche 'espace'.
-    le bonhomme se déplace alors dans différentes directions, entre en
-    collision avec les parois du cube qui la contient et son mouvement (son
-    déplacement) change alors de direction.
+translate();
+scale();
+rotate();
+translate();
 
-    Lorsque le bonhomme se déplace ainsi, comment peut-on toujours montrer
-    le bonhomme se déplaçant en regardant vers l'avant, c'est-à-dire dans le
-    sens de son mouvement. Comment faire en sorte que la tête (et le corps)
-    soit toujours dirigée dans le sens de son mouvement ?
-    Décrivez (avec assez de détails) comment vous implanteriez ceci dans ce TP.
 
-Il faut faire appliquer une rotation (autour de l'axe vertical) au
-bonhomme afin que sa tête (et son corps) soit toujours dans la direction du mouvement.
-Dans le plan XY, la tête est placé dans la direction de l'axe des X+.
-On peut trouver l'angle de rotation nécessaire en utilisant la fonction atan()
-et la direction du déplacement: angleCorps = atan2( DeplY, DeplX );
+
+
+
+Q2: Dans ce TP dans la partie 2, on vous a demandé d'utiliser des VBOs pour afficher la fameuse théière !
+    Visuellement rien ne change, mais quelles sont les différences entre les deux méthodes utilisées ?
+    Pourquoi d'ailleurs ne remarque-t-on aucune différence ?
+
+
+La methode qui utilise les VBO et VAO utilise moins de ressources du processeur en reduisant les appels a la librairie opneGL. 
+
+On ne peut pas remarquer de differences entre les deux methodes, car la forme n'est pas assez complez pour causer des retards au niveau du processeur.
+
